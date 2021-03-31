@@ -8,7 +8,7 @@ import { userContext } from '../../App';
 import { useHistory, useLocation } from 'react-router';
 
 
-if(firebase.apps.length === 0) {
+if (firebase.apps.length === 0) {
     firebase.initializeApp(firebaseConfig);
 }
 
@@ -17,7 +17,7 @@ const Login = () => {
 
     const [logedInuser, setLogedInUser] = useContext(userContext)
 
-    
+
     const history = useHistory()
     const location = useLocation()
     let { from } = location.state || { from: { pathname: "/" } };
@@ -27,19 +27,31 @@ const Login = () => {
         firebase.auth()
             .signInWithPopup(googleProvider)
             .then((result) => {
-                const {displayName, email} = result.user
-                const signedInUser = {name: displayName, email: email}
+                const { displayName, email } = result.user
+                const signedInUser = { name: displayName, email: email }
                 setLogedInUser(signedInUser)
+                storeAuthentication()
                 history.replace(from);
-                
+
             }).catch((error) => {
                 var errorMessage = error.message;
                 console.log(errorMessage)
             });
     }
 
+    const storeAuthentication = () => {
+        firebase.auth().currentUser.getIdToken(/* forceRefresh */ true)
+        .then(function (idToken) {
+            sessionStorage.setItem('token', idToken)
+            // Send token to your backend via HTTPS
+            // ...
+        }).catch(function (error) {
+            console.log(error)
+        });
+    }
+
     return (
-        <div>
+        <div style={{ textAlign: "center" }}>
             <Button color="primary" onClick={googleSignIn}>Google sign in</Button>
         </div>
     );
